@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<junit-jupiter.version>5.12.2</junit-jupiter.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -65,6 +66,28 @@
 			<version>2.18.1</version>
 		</dependency>
 
+		<!-- Solo para pruebas: BuyRequestDTO/SellRequestDTO no tienen anotaciones de Bean Validation,
+		     y el proyecto no declara spring-boot-starter-validation. Se agrega en scope test para
+		     poder ejercitar jakarta.validation.Validator en CP-01/CP-02. -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+			<version>3.0.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.1.Final</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.12.2</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -72,6 +95,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.4</version>
 			</plugin>
 		</plugins>
 	</build>
