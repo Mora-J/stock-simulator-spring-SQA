@@ -7,19 +7,19 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
-      unit-tests:
+      run-unit-tests:
         description: "Ejecutar pruebas unitarias"
         required: false
         default: "true"
-      integration-tests:
+      run-integration-tests:
         description: "Ejecutar pruebas de integración"
         required: false
         default: "true"
 
 jobs:
-  test:
+  unit:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs['run-unit-tests'] == 'true' }}
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:15
@@ -34,12 +34,57 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     env:
       SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: elpepe123
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/.cache
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Ensure mvnw is executable
+        run: chmod +x mvnw
+
+      - name: Run Java unit tests
+        run: ./mvnw test -B
+
+  integration:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs['run-integration-tests'] == 'true' }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: elpepe123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: elpepe123
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,21 +100,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Cache Maven local repository
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2/repository
-            ~/.m2/.cache
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
       - name: Install Newman
         run: npm install -g newman
 
-      - name: Run Java unit tests
-        run: ./mvnw test -B
+      - name: Ensure mvnw is executable
+        run: chmod +x mvnw
 
       - name: Start Spring Boot application
         run: |
@@ -94,21 +129,3 @@ jobs:
         if: always()
         run: |
           kill $(cat app.pid) || true
-
-  unit:
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.unit-tests == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      # checkout, java, node, newman, etc
-      - name: Run Java unit tests
-        run: ./mvnw test -B
-
-  integration:
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.integration-tests == 'true' }}
-    runs-on: ubuntu-latest
-    needs: unit
-    steps:
-      # checkout, java, node, newman, etc
-      - name: Run Postman integration tests
-        run: |
-          newman run "Stock Simulator - Integración.postman_collection.json" --bail
