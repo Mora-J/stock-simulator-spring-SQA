@@ -2,11 +2,19 @@ name: Java + Postman CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      unit-tests:
+        description: "Ejecutar pruebas unitarias"
+        required: false
+        default: "true"
+      integration-tests:
+        description: "Ejecutar pruebas de integración"
+        required: false
+        default: "true"
 
 jobs:
   test:
@@ -86,3 +94,21 @@ jobs:
         if: always()
         run: |
           kill $(cat app.pid) || true
+
+  unit:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.unit-tests == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # checkout, java, node, newman, etc
+      - name: Run Java unit tests
+        run: ./mvnw test -B
+
+  integration:
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.integration-tests == 'true' }}
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      # checkout, java, node, newman, etc
+      - name: Run Postman integration tests
+        run: |
+          newman run "Stock Simulator - Integración.postman_collection.json" --bail
