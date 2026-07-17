@@ -46,10 +46,11 @@ public class UserController {
         }
         else {
             String code = PasswordUtil.generateRandomCode();
-            this.userService.sendConfirmationEmail(user, code);
+            //this.userService.sendConfirmationEmail(user, code);
             User createdUser = userService.mapUserRequestDTOToUser(user);
             createdUser.setConfirmationCode(code);
-            createdUser.setVerified(false);
+            createdUser.setVerified(true);
+            createdUser.setConfirmationCode(null);
             userService.createUser(createdUser);
             UserResponseDTO userResponse = userService.mapUserToUserResponseDTO(createdUser);
             return ResponseEntity.status(HttpStatus.OK).body(userResponse);

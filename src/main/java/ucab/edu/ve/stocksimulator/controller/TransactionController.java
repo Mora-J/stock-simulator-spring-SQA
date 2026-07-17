@@ -82,7 +82,7 @@ public class TransactionController {
         MessageResponseDTO messageResponseDTO = new MessageResponseDTO();
         ownedStockService.transferStock(transferRequestDTO);
         transactionService.registerTransfer(transferRequestDTO);
-        transactionService.sendTransferEmail(transferRequestDTO);
+        //transactionService.sendTransferEmail(transferRequestDTO);
         messageResponseDTO.setCode(0);
         messageResponseDTO.setMessage("Transfer completed successfully");
         return ResponseEntity.status(HttpStatus.OK).body(messageResponseDTO);

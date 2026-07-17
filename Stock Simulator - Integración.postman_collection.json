@@ -1,0 +1,238 @@
+{
+  "info": {
+    "_postman_id": "f8bf8d1b-952a-453d-add7-c358b1a8397c",
+    "name": "Stock Simulator - Integración",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50714882",
+    "_collection_link": "https://go.postman.co/collection/50714882-f8bf8d1b-952a-453d-add7-c358b1a8397c?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "CP-11 Consultar Mercado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"La respuesta usa la estructura StockListResponseDTO (Es un json valido)\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.property(\"code\");\r",
+              "    pm.expect(jsonData).to.have.property(\"stockDTOList\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/stock/all",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "stock",
+            "all"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CP-36 Transferencia sin Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"El acceso debe ser denegado (403 o 401)\", function () {\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([401, 403]);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/transaction/transfer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "transaction",
+            "transfer"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CP-08 Inyección SQL en Búsqueda",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"El sistema no debe fallar con error interno (No 500)\", function () {\r",
+              "    // Si escapa bien los caracteres, devolverá 200 (lista vacía) o 400 (Bad Request).\r",
+              "    // Si devuelve 500, significa que la base de datos colapsó por la inyección.\r",
+              "    pm.expect(pm.response.code).to.not.equal(500);\r",
+              "});\r",
+              "pm.test(\"El tiempo de respuesta debe ser normal (menor a 500ms)\", function () {\r",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/stock/search?query=MSFT'; DROP TABLE users;",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "stock",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "query",
+              "value": "MSFT'; DROP TABLE users;"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CP-50 Transferencia Cíclica (A sí mismo)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"La transacción cíclica es rechazada por el backend\", function () {\r",
+              "    pm.expect(pm.response.code).to.not.equal(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"El mensaje de error debe ser pertinente\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    // Verifica que el backend arroje un mensaje de error o rechazo\r",
+              "    pm.expect(jsonData).to.not.be.empty;\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"issuerUsername\": \"usuario_admin\",\r\n  \"receptorUsername\": \"usuario_admin\",\r\n  \"ticker\": \"MSFT\",\r\n  \"name\": \"Microsoft Corporation\",\r\n  \"quantity\": 10,\r\n  \"amount\": 500.00\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/transaction/transfer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "transaction",
+            "transfer"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "CP-49 Doble Clic (Condición de Carrera)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"El endpoint responde y aísla la petición (No colapsa la BD)\", function () {\r",
+              "    pm.expect(pm.response.code).to.not.equal(500);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"investor01\",\r\n  \"ticker\": \"MSFT\",\r\n  \"name\": \"Microsoft Corp\",\r\n  \"quantity\": 10,\r\n  \"amount\": 3500.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/transaction/buy",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "transaction",
+            "buy"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
