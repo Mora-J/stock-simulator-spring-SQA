@@ -11,11 +11,11 @@ INSERT INTO stockuser (
   admin
 ) VALUES
   ('Juan', 'Perez', 'investor01', 'investor01@example.com', true,
-   '$2a$10$7EqJtq98hPqEX7fNZaFWoOaJ2pO1pBwkFz8/9gWdfM2v0gNA5XO1u',
+   '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
    NULL,
    false),
   ('Admin', 'User', 'usuario_admin', 'admin@example.com', true,
-   '$2a$10$7EqJtq98hPqEX7fNZaFWoOaJ2pO1pBwkFz8/9gWdfM2v0gNA5XO1u',
+   '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
    NULL,
    true);
 
