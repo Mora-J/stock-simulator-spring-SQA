@@ -81,11 +81,16 @@ function main() {
   let coveragePercent = 0;
   if (fs.existsSync(coveragePath)) {
     const xml = fs.readFileSync(coveragePath, 'utf8');
-    const lineMatch = xml.match(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/);
+    const lineMatch = xml.match(
+      /<counter\s+type="LINE"[^>]*missed="(\d+)"[^>]*covered="(\d+)"[^>]*\/?>/g
+    );
+
     if (lineMatch) {
       const missed = Number(lineMatch[1]);
       const covered = Number(lineMatch[2]);
-      coveragePercent = total = covered + missed ? Number(((covered / (covered + missed)) * 100).toFixed(2)) : 0;
+      coveragePercent = covered + missed
+        ? Number(((covered / (covered + missed)) * 100).toFixed(2))
+        : 0;
     }
   }
 
