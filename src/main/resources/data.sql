@@ -21,6 +21,10 @@ INSERT INTO stockuser (
   ('Miguel', 'Gomez', 'unverified01', 'unverified01@example.com', false,
    '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
    'pending-confirmation',
+   false),
+  ('Carlos', 'Ramirez', 'investor02', 'verified02@example.com', true,
+   '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
+   NULL,
    false);
 
 INSERT INTO stock (ticker, name, description) VALUES
