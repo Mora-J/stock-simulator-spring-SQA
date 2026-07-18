@@ -17,7 +17,11 @@ INSERT INTO stockuser (
   ('Admin', 'User', 'usuario_admin', 'admin@example.com', true,
    '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
    NULL,
-   true);
+   true),
+  ('Miguel', 'Gomez', 'unverified01', 'unverified01@example.com', false,
+   '$2a$10$lY4roN4JKXV0jfMFV7FyteUJQVWp/BOzE69Yf5oChtVcS/BxWddAC',
+   'pending-confirmation',
+   false);
 
 INSERT INTO stock (ticker, name, description) VALUES
   ('MSFT', 'Microsoft', 'Microsoft Corporation stock'),
