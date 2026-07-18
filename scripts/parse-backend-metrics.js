@@ -77,22 +77,28 @@ function main() {
   const surefire = parseSurefireFiles();
   const newman = parseNewmanReport();
 
-  const coveragePath = path.resolve('target/site/jacoco/jacoco.xml');
-  let coveragePercent = 0;
-  if (fs.existsSync(coveragePath)) {
-    const xml = fs.readFileSync(coveragePath, 'utf8');
-    const lineMatch = xml.match(
-      /<counter\s+type="LINE"[^>]*missed="(\d+)"[^>]*covered="(\d+)"[^>]*\/?>/g
-    );
+const coveragePath = path.resolve('target/site/jacoco/jacoco.xml');
+let coveragePercent = 0;
 
-    if (lineMatch) {
-      const missed = Number(lineMatch[1]);
-      const covered = Number(lineMatch[2]);
-      coveragePercent = covered + missed
-        ? Number(((covered / (covered + missed)) * 100).toFixed(2))
-        : 0;
-    }
+if (fs.existsSync(coveragePath)) {
+  const xml = fs.readFileSync(coveragePath, 'utf8');
+  
+  // Expresión regular sin /g si solo quieres el primero, 
+  // pero con /g y matchAll para atrapar todos los bloques y sacar el total del final.
+  const regex = /<counter\s+type="LINE"\s+missed="(\d+)"\s+covered="(\d+)"\s*\/?>/g;
+  const matches = [...xml.matchAll(regex)];
+
+  if (matches.length > 0) {
+    // El último counter de tipo LINE en el archivo JaCoCo siempre es el acumulado global
+    const globalLineCounter = matches[matches.length - 1]; 
+    const missed = Number(globalLineCounter[1]);
+    const covered = Number(globalLineCounter[2]);
+
+    coveragePercent = (covered + missed)
+      ? Number(((covered / (covered + missed)) * 100).toFixed(2))
+      : 0;
   }
+}
 
   const totalTests = surefire.tests;
   const totalFailed = surefire.failures + surefire.errors;
