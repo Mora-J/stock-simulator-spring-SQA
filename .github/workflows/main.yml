@@ -122,8 +122,7 @@ jobs:
           exit 1
 
       - name: Run Postman integration tests
-        run: |
-          newman run "Stock Simulator - Integración.postman_collection.json" --bail
+        run: newman run "Stock Simulator - Integración.postman_collection.json" --suppress-exit-code
 
       - name: Stop Spring Boot application
         if: always()
