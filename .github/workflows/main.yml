@@ -128,3 +128,19 @@ jobs:
         if: always()
         run: |
           kill $(cat app.pid) || true
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
+
+      - name: Show surefire failure summaries
+        if: failure()
+        run: |
+          echo "=== se muestran los reportes de surefire ==="
+          find target/surefire-reports -type f \( -name '*.txt' -o -name '*.xml' \) | sort | while read -r file; do
+            echo "------ $file ------"
+            sed -n '1,200p' "$file"
+          done
