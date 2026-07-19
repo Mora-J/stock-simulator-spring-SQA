@@ -122,3 +122,43 @@ jobs:
             reports/newman-report.json
             target/surefire-reports
             target/site/jacoco
+
+  push-to-central-dashboard:
+      needs: backend-metrics
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download governance artifacts
+          uses: actions/download-artifact@v4
+          with:
+            name: backend-governance-artifacts
+            path: artifacts
+
+        - name: Push to Central Dashboard Repository
+          env:
+            # Token personal de GitHub con permisos de escritura en el repo del dashboard
+            GH_TOKEN: ${{ secrets.DASHBOARD_WRITE_TOKEN }}
+          run: |
+            # 1. Clonar el repositorio central usando el token
+            git clone https://x-access-token:${GH_TOKEN}@github.com/Mora-J/stock-simulator-dashboard-SQA.git dashboard-repo
+            cd dashboard-repo
+            
+            # 2. Crear una estructura limpia para los datos del backend
+            mkdir -p backend-data/metrics
+            mkdir -p backend-data/reports/newman
+            mkdir -p backend-data/reports/surefire
+            
+            # 3. Copiar solo lo que nos importa (Omitimos JaCoCo)
+            cp ../artifacts/backend-metrics-governance.json backend-data/metrics/
+            cp ../artifacts/backend-metrics-governance.csv backend-data/metrics/
+            cp ../artifacts/reports/newman-report.json backend-data/reports/newman/
+            cp ../artifacts/target/surefire-reports/*.xml backend-data/reports/surefire/
+            
+            # 4. Configurar Git y hacer el Push
+            git config user.name "QAOps Backend Bot"
+            git config user.email "qaops-bot@github.com"
+            
+            git add backend-data/
+            
+            # Si no hay cambios en las métricas, git diff-index evita que el comando falle
+            git diff-index --quiet HEAD || git commit -m "chore(qa): update backend metrics and reports [skip ci]"
+            git push origin main
